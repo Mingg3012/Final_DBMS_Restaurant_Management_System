@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block page_title %}Menu Items{% endblock %}
+{% block page_subtitle %}View and manage dishes, categories, prices, and availability{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {% if can_do_action("add_menu_item") %}
+    <div class="col-xl-4">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Add Menu Item</h5>
+                <span class="section-chip">Admin</span>
+            </div>
+
+            <form method="POST" action="/menu/add" class="mt-4">
+                <div class="mb-3">
+                    <label class="form-label">Dish Name</label>
+                    <input class="form-control custom-input" name="dish_name" placeholder="Enter dish name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Category</label>
+                    <select class="form-select custom-input" name="category_id" required>
+                        {% for c in categories %}
+                        <option value="{{ c.CategoryID }}">{{ c.CategoryName }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Price</label>
+                    <input class="form-control custom-input" type="number" name="price" min="0" step="1000" placeholder="Enter price" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Availability</label>
+                    <select class="form-select custom-input" name="availability" required>
+                        <option value="available">Available</option>
+                        <option value="unavailable">Unavailable</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-gradient w-100" type="submit">
+                    <i class="bi bi-plus-circle me-2"></i>Add Item
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+    {% else %}
+    <div class="col-xl-12">
+    {% endif %}
+
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Menu Overview</h5>
+                <span class="section-chip">{{ menu_items|length }} items</span>
+            </div>
+
+            {% if not can_do_action("add_menu_item") %}
+            <div class="permission-note mt-4">
+                <i class="bi bi-lock-fill"></i>
+                Current role can view menu items but cannot add or update menu items.
+            </div>
+            {% endif %}
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Dish ID</th>
+                            <th>Dish Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Availability</th>
+                            {% if can_do_action("update_menu_item") %}
+                            <th class="text-center">Update</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in menu_items %}
+                        <tr>
+                            <td><span class="table-id">#{{ item.DishID }}</span></td>
+                            <td class="fw-semibold">{{ item.DishName }}</td>
+                            <td>{{ item.CategoryName or "Uncategorized" }}</td>
+                            <td>{{ "{:,.0f}".format(item.Price or 0) }} VND</td>
+                            <td>
+                                {% if item.Availability == "available" %}
+                                    <span class="status-badge status-success">
+                                        <i class="bi bi-check-circle-fill"></i> Available
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-danger">
+                                        <i class="bi bi-x-circle-fill"></i> Unavailable
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            {% if can_do_action("update_menu_item") %}
+                            <td>
+                                <form method="POST" action="/menu/update-availability" class="d-flex gap-2 justify-content-center">
+                                    <input type="hidden" name="dish_id" value="{{ item.DishID }}">
+
+                                    <select class="form-select form-select-sm custom-input table-status-select" name="availability">
+                                        <option value="available" {% if item.Availability == "available" %}selected{% endif %}>Available</option>
+                                        <option value="unavailable" {% if item.Availability == "unavailable" %}selected{% endif %}>Unavailable</option>
+                                    </select>
+
+                                    <button class="btn btn-sm btn-gradient table-update-btn" type="submit">
+                                        Update
+                                    </button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if menu_items|length == 0 %}
+                <div class="empty-state">
+                    No menu items found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

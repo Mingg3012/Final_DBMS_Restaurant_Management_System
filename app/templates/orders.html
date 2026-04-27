@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block page_title %}Orders{% endblock %}
+{% block page_subtitle %}Create orders and add dishes to customer orders{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {% if can_do_action("create_order") %}
+    <div class="col-xl-4">
+        <div class="content-card mb-4">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Create Order</h5>
+                <span class="section-chip">Order</span>
+            </div>
+
+            <form method="POST" action="/orders/create" class="mt-4">
+                <div class="mb-3">
+                    <label class="form-label">Customer</label>
+                    <select class="form-select custom-input" name="customer_id" required>
+                        {% for c in customers %}
+                        <option value="{{ c.CustomerID }}">{{ c.CustomerName }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Table</label>
+                    <select class="form-select custom-input" name="table_id" required>
+                        {% for t in tables %}
+                        <option value="{{ t.TableID }}">
+                            {{ t.TableNumber }} - {{ t.Capacity }} seats - {{ t.Status }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Staff</label>
+                    <select class="form-select custom-input" name="staff_id" required>
+                        {% for s in staff_members %}
+                        <option value="{{ s.StaffID }}">{{ s.StaffName }} - {{ s.Role }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button class="btn btn-gradient w-100" type="submit">
+                    <i class="bi bi-plus-circle me-2"></i>Create Order
+                </button>
+            </form>
+        </div>
+
+        {% if can_do_action("add_order_item") %}
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Add Order Item</h5>
+                <span class="section-chip">Dish</span>
+            </div>
+
+            <form method="POST" action="/orders/add-item" class="mt-4">
+                <div class="mb-3">
+                    <label class="form-label">Order</label>
+                    {% if open_orders|length > 0 %}
+                    <select class="form-select custom-input" name="order_id" required>
+                        {% for o in open_orders %}
+                        <option value="{{ o.OrderID }}">
+                            Order #{{ o.OrderID }} - {{ o.CustomerName }} - {{ o.TableNumber }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                    <div class="permission-note">
+                        <i class="bi bi-info-circle-fill"></i>
+                        No open orders available. Please create a new order first.
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Dish</label>
+                    <select class="form-select custom-input" name="dish_id" required>
+                        {% for m in menu_items %}
+                        <option value="{{ m.DishID }}">
+                            {{ m.DishName }} - {{ "{:,.0f}".format(m.Price or 0) }} VND
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Quantity</label>
+                    <input class="form-control custom-input" type="number" name="quantity" min="1" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <input class="form-control custom-input" name="notes" placeholder="Optional notes">
+                </div>
+
+                <button class="btn btn-gradient w-100" type="submit">
+                    <i class="bi bi-basket-fill me-2"></i>Add Item
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-xl-8">
+    {% else %}
+    <div class="col-xl-12">
+    {% endif %}
+
+        <div class="content-card mb-4">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Order List</h5>
+                <span class="section-chip">{{ orders|length }} orders</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Table</th>
+                            <th>Staff</th>
+                            <th>Date Time</th>
+                            <th>Status</th>
+                            {% if can_do_action("update_order_status") %}
+                            <th class="text-center">Action</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for o in orders %}
+                        <tr>
+                            <td><span class="table-id">#{{ o.OrderID }}</span></td>
+                            <td class="fw-semibold">{{ o.CustomerName }}</td>
+                            <td>{{ o.TableNumber }}</td>
+                            <td>{{ o.StaffName }}</td>
+                            <td>{{ o.OrderDateTime }}</td>
+                            <td>
+                                {% if o.Status == "open" %}
+                                    <span class="status-badge status-success">
+                                        <i class="bi bi-play-circle-fill"></i> Open
+                                    </span>
+                                {% elif o.Status == "served" %}
+                                    <span class="status-badge status-warning">
+                                        <i class="bi bi-check-circle-fill"></i> Served
+                                    </span>
+                                {% elif o.Status == "cancelled" %}
+                                    <span class="status-badge status-danger">
+                                        <i class="bi bi-x-circle-fill"></i> Cancelled
+                                    </span>
+                                {% elif o.Status == "closed" %}
+                                    <span class="status-badge status-secondary">
+                                        <i class="bi bi-lock-fill"></i> Closed
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-secondary">
+                                        {{ o.Status }}
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            {% if can_do_action("update_order_status") %}
+                            <td>
+                                {% if o.Status != "closed" and o.Status != "cancelled" %}
+                                {% if o.Status == "open" %}
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <form method="POST" action="/orders/update-status">
+                                        <input type="hidden" name="order_id" value="{{ o.OrderID }}">
+                                        <input type="hidden" name="order_status" value="served">
+                                        <button class="btn btn-sm btn-success rounded-pill px-3" type="submit">
+                                            <i class="bi bi-check2-circle me-1"></i>Mark Served
+                                        </button>
+                                    </form>
+
+                                    <form method="POST" action="/orders/update-status">
+                                        <input type="hidden" name="order_id" value="{{ o.OrderID }}">
+                                        <input type="hidden" name="order_status" value="cancelled">
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" type="submit">
+                                            Cancel
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {% elif o.Status == "served" %}
+                                <span class="status-badge status-warning">
+                                    Ready for invoice
+                                </span>
+
+                                {% elif o.Status == "closed" %}
+                                <span class="text-muted">
+                                    <i class="bi bi-lock-fill me-1"></i>Locked
+                                </span>
+
+                                {% elif o.Status == "cancelled" %}
+                                <span class="text-muted">
+                                    <i class="bi bi-x-circle-fill me-1"></i>Cancelled
+                                </span>
+
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-muted">Locked</span>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if orders|length == 0 %}
+                <div class="empty-state">
+                    No orders found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Recent Order Items</h5>
+                <span class="section-chip">{{ order_items|length }} items</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Item ID</th>
+                            <th>Order ID</th>
+                            <th>Dish</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Line Total</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in order_items %}
+                        <tr>
+                            <td><span class="table-id">#{{ item.OrderItemID }}</span></td>
+                            <td>#{{ item.OrderID }}</td>
+                            <td class="fw-semibold">{{ item.DishName }}</td>
+                            <td>{{ item.Quantity }}</td>
+                            <td>{{ "{:,.0f}".format(item.UnitPrice or 0) }} VND</td>
+                            <td>{{ "{:,.0f}".format(item.LineTotal or 0) }} VND</td>
+                            <td>{{ item.Notes or "-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if order_items|length == 0 %}
+                <div class="empty-state">
+                    No order items found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

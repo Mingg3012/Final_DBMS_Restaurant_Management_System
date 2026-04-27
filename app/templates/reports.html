@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block page_title %}Reports{% endblock %}
+{% block page_subtitle %}Analyze restaurant performance using SQL views and aggregated data{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Top Selling Dishes</h5>
+                <span class="section-chip">View</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Dish</th>
+                            <th>Total Quantity Sold</th>
+                            <th>Total Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in top_dishes %}
+                        <tr>
+                            <td class="fw-semibold">{{ d.DishName }}</td>
+                            <td>{{ d.TotalQuantitySold }}</td>
+                            <td>{{ "{:,.0f}".format(d.TotalSales or 0) }} VND</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Daily Revenue</h5>
+                <span class="section-chip">Summary</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Invoices</th>
+                            <th>Subtotal</th>
+                            <th>Service Charge</th>
+                            <th>Discount</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in daily_revenue %}
+                        <tr>
+                            <td class="fw-semibold">{{ r.RevenueDate }}</td>
+                            <td>{{ r.NumberOfInvoices }}</td>
+                            <td>{{ "{:,.0f}".format(r.TotalSubTotal or 0) }} VND</td>
+                            <td>{{ "{:,.0f}".format(r.TotalServiceCharge or 0) }} VND</td>
+                            <td>{{ "{:,.0f}".format(r.TotalDiscount or 0) }} VND</td>
+                            <td>{{ "{:,.0f}".format(r.TotalRevenue or 0) }} VND</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6">
+        <div class="content-card h-100">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Customer Visit Summary</h5>
+                <span class="section-chip">Customer Analytics</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Phone</th>
+                            <th>Total Visits</th>
+                            <th>Total Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in customer_visits %}
+                        <tr>
+                            <td class="fw-semibold">{{ c.CustomerName }}</td>
+                            <td>{{ c.PhoneNumber }}</td>
+                            <td>{{ c.TotalVisits }}</td>
+                            <td>{{ "{:,.0f}".format(c.TotalSpent or 0) }} VND</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6">
+        <div class="content-card h-100">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Table Usage Statistics</h5>
+                <span class="section-chip">Operations</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Table</th>
+                            <th>Capacity</th>
+                            <th>Total Orders</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in table_usage %}
+                        <tr>
+                            <td class="fw-semibold">{{ t.TableNumber }}</td>
+                            <td>{{ t.Capacity }}</td>
+                            <td>{{ t.TotalOrders }}</td>
+                            <td>{{ "{:,.0f}".format(t.TotalRevenue or 0) }} VND</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

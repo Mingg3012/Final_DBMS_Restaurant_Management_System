@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block page_title %}Reservations{% endblock %}
+{% block page_subtitle %}Create and manage customer reservations efficiently{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {% if can_do_action("add_reservation") %}
+    <div class="col-xl-4">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Create Reservation</h5>
+                <span class="section-chip">Booking</span>
+            </div>
+
+            <form method="POST" action="/reservations/add" class="mt-4">
+                <div class="mb-3">
+                    <label class="form-label">Customer</label>
+                    <select class="form-select custom-input" name="customer_id" required>
+                        {% for c in customers %}
+                        <option value="{{ c.CustomerID }}">{{ c.CustomerName }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Table</label>
+                    <select class="form-select custom-input" name="table_id" required>
+                        {% for t in tables %}
+                        <option value="{{ t.TableID }}">
+                            {{ t.TableNumber }} - {{ t.Capacity }} seats - {{ t.Status }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Reservation Date & Time</label>
+                    <input class="form-control custom-input" type="datetime-local" name="reservation_datetime" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Guest Count</label>
+                    <input class="form-control custom-input" type="number" name="guest_count" min="1" required>
+                </div>
+
+                <button class="btn btn-gradient w-100" type="submit">
+                    <i class="bi bi-calendar-plus me-2"></i>Create Reservation
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+    {% else %}
+    <div class="col-xl-12">
+    {% endif %}
+
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Reservation List</h5>
+                <span class="section-chip">{{ reservations|length }} bookings</span>
+            </div>
+
+            {% if not can_do_action("add_reservation") %}
+            <div class="permission-note mt-4">
+                <i class="bi bi-lock-fill"></i>
+                Current role can view reservations but cannot create new reservations.
+            </div>
+            {% endif %}
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Table</th>
+                            <th>Date Time</th>
+                            <th>Guests</th>
+                            <th>Status</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for r in reservations %}
+                        <tr>
+                            <td><span class="table-id">#{{ r.ReservationID }}</span></td>
+                            <td class="fw-semibold">{{ r.CustomerName }}</td>
+                            <td>{{ r.TableNumber }}</td>
+                            <td>{{ r.ReservationDateTime }}</td>
+                            <td>{{ r.GuestCount }}</td>
+                            <td>
+                                {% if r.Status == "confirmed" %}
+                                    <span class="status-badge status-success">
+                                        <i class="bi bi-check-circle-fill"></i> Confirmed
+                                    </span>
+                                {% elif r.Status == "pending" %}
+                                    <span class="status-badge status-warning">
+                                        <i class="bi bi-hourglass-split"></i> Pending
+                                    </span>
+                                {% elif r.Status == "cancelled" %}
+                                    <span class="status-badge status-danger">
+                                        <i class="bi bi-x-circle-fill"></i> Cancelled
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-secondary">
+                                        <i class="bi bi-info-circle-fill"></i> {{ r.Status }}
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center">
+                                {% if r.Status == "pending" and can_do_action("confirm_reservation") %}
+                                <form method="POST" action="/reservations/confirm/{{ r.ReservationID }}">
+                                    <button class="btn btn-sm btn-success rounded-pill px-3" type="submit">
+                                        <i class="bi bi-check2-circle me-1"></i>Confirm
+                                    </button>
+                                </form>
+                                {% elif r.Status == "pending" %}
+                                <span class="text-muted">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if reservations|length == 0 %}
+                <div class="empty-state">
+                    No reservations found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

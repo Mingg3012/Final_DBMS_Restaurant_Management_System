@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Restaurant operation overview and daily management summary{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="metric-card metric-card-primary">
+            <div class="metric-icon"><i class="bi bi-calendar-check-fill"></i></div>
+            <div>
+                <div class="metric-label">Today's Reservations</div>
+                <div class="metric-value">{{ today_reservations }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="metric-card metric-card-success">
+            <div class="metric-icon"><i class="bi bi-grid-3x3-gap-fill"></i></div>
+            <div>
+                <div class="metric-label">Available Tables</div>
+                <div class="metric-value">{{ available_tables }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="metric-card metric-card-warning">
+            <div class="metric-icon"><i class="bi bi-receipt-cutoff"></i></div>
+            <div>
+                <div class="metric-label">Unpaid Invoices</div>
+                <div class="metric-value">{{ unpaid_invoices }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="metric-card metric-card-danger">
+            <div class="metric-icon"><i class="bi bi-cash-coin"></i></div>
+            <div>
+                <div class="metric-label">Today's Revenue</div>
+                <div class="metric-value">{{ "{:,.0f}".format(today_revenue or 0) }}</div>
+                <div class="metric-mini">VND</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <div class="content-card h-100">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Recent Reservations</h5>
+                <a href="/reservations" class="small-link">View all</a>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Table</th>
+                            <th>Date Time</th>
+                            <th>Guests</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for r in recent_reservations %}
+                        <tr>
+                            <td class="fw-semibold">{{ r.CustomerName }}</td>
+                            <td>{{ r.TableNumber }}</td>
+                            <td>{{ r.ReservationDateTime }}</td>
+                            <td>{{ r.GuestCount }}</td>
+                            <td>
+                                {% if r.Status == "confirmed" %}
+                                    <span class="status-badge status-success">
+                                        <i class="bi bi-check-circle-fill"></i> Confirmed
+                                    </span>
+                                {% elif r.Status == "pending" %}
+                                    <span class="status-badge status-warning">
+                                        <i class="bi bi-hourglass-split"></i> Pending
+                                    </span>
+                                {% elif r.Status == "cancelled" %}
+                                    <span class="status-badge status-danger">
+                                        <i class="bi bi-x-circle-fill"></i> Cancelled
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-secondary">
+                                        {{ r.Status }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if recent_reservations|length == 0 %}
+                <div class="empty-state">
+                    No reservations found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="content-card h-100">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Table Status</h5>
+                <span class="section-chip">{{ total_tables }} tables</span>
+            </div>
+
+            <div class="table-status-list mt-4">
+                <div class="table-status-item">
+                    <div>
+                        <div class="status-title">Available</div>
+                        <div class="status-desc">Ready for new customers</div>
+                    </div>
+                    <div class="status-count status-count-success">{{ available_tables }}</div>
+                </div>
+
+                <div class="table-status-item">
+                    <div>
+                        <div class="status-title">Reserved</div>
+                        <div class="status-desc">Booked by customers</div>
+                    </div>
+                    <div class="status-count status-count-warning">{{ reserved_tables }}</div>
+                </div>
+
+                <div class="table-status-item">
+                    <div>
+                        <div class="status-title">Occupied</div>
+                        <div class="status-desc">Currently being served</div>
+                    </div>
+                    <div class="status-count status-count-danger">{{ occupied_tables }}</div>
+                </div>
+                <div class="table-status-item">
+                    <div>
+                        <div class="status-title">Maintenance</div>
+                        <div class="status-desc">Temporarily unavailable</div>
+                    </div>
+                    <div class="status-count status-count-secondary">{{ maintenance_tables }}</div>
+                </div>
+            </div>
+
+            <div class="mini-summary mt-4">
+                <div class="mini-summary-row">
+                    <span>Total Customers</span>
+                    <strong>{{ total_customers }}</strong>
+                </div>
+                <div class="mini-summary-row">
+                    <span>Menu Items</span>
+                    <strong>{{ total_menu_items }}</strong>
+                </div>
+                <div class="mini-summary-row">
+                    <span>Total Revenue</span>
+                    <strong>{{ "{:,.0f}".format(total_revenue or 0) }} VND</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Popular Dishes</h5>
+                <a href="/reports" class="small-link">Open reports</a>
+            </div>
+
+            <div class="dish-list mt-4">
+                {% for d in top_dishes %}
+                <div class="dish-row">
+                    <div>
+                        <div class="dish-name">{{ d.DishName }}</div>
+                        <div class="dish-meta">Sold {{ d.TotalQuantitySold }} items</div>
+                    </div>
+                    <div class="dish-sales">
+                        {{ "{:,.0f}".format(d.TotalSales or 0) }} VND
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if top_dishes|length == 0 %}
+                <div class="empty-state">
+                    No sales data available.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Quick Actions</h5>
+                <span class="section-chip">Management</span>
+            </div>
+
+            <div class="quick-action-list mt-4">
+                <a href="/customers" class="quick-action">
+                    <i class="bi bi-person-plus-fill"></i>
+                    <span>Add Customer</span>
+                </a>
+
+                <a href="/reservations" class="quick-action">
+                    <i class="bi bi-calendar-plus-fill"></i>
+                    <span>Create Reservation</span>
+                </a>
+
+                <a href="/menu" class="quick-action">
+                    <i class="bi bi-journal-richtext"></i>
+                    <span>View Menu</span>
+                </a>
+
+                <a href="/reports" class="quick-action">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    <span>View Reports</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

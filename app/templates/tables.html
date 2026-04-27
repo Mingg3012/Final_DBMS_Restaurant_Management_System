@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block page_title %}Tables{% endblock %}
+{% block page_subtitle %}View and manage restaurant table status{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <div class="col-12">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Restaurant Tables</h5>
+                <span class="section-chip">{{ tables|length }} tables</span>
+            </div>
+
+            {% if not can_do_action("update_table") %}
+            <div class="permission-note mt-4">
+                <i class="bi bi-lock-fill"></i>
+                Current role can view table status but cannot update table status.
+            </div>
+            {% endif %}
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Table ID</th>
+                            <th>Table Number</th>
+                            <th>Capacity</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            {% if can_do_action("update_table") %}
+                            <th class="text-center">Update Status</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for t in tables %}
+                        <tr>
+                            <td><span class="table-id">#{{ t.TableID }}</span></td>
+                            <td class="fw-semibold">{{ t.TableNumber }}</td>
+                            <td>{{ t.Capacity }} seats</td>
+                            <td>
+                                {% if t.Status == "available" %}
+                                    <span class="status-badge status-success">
+                                        <i class="bi bi-check-circle-fill"></i> Available
+                                    </span>
+                                {% elif t.Status == "reserved" %}
+                                    <span class="status-badge status-warning">
+                                        <i class="bi bi-calendar-check-fill"></i> Reserved
+                                    </span>
+                                {% elif t.Status == "occupied" %}
+                                    <span class="status-badge status-danger">
+                                        <i class="bi bi-person-fill"></i> Occupied
+                                    </span>
+                                {% elif t.Status == "maintenance" %}
+                                    <span class="status-badge status-secondary">
+                                        <i class="bi bi-tools"></i> Maintenance
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-secondary">
+                                        {{ t.Status }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ t.CreatedAt }}</td>
+
+                            {% if can_do_action("update_table") %}
+                            <td>
+                                <form method="POST" action="/tables/update-status" class="d-flex gap-2 justify-content-center">
+                                    <input type="hidden" name="table_id" value="{{ t.TableID }}">
+
+                                    <select class="form-select form-select-sm custom-input table-status-select" name="status">
+                                        <option value="available" {% if t.Status == "available" %}selected{% endif %}>Available</option>
+                                        <option value="reserved" {% if t.Status == "reserved" %}selected{% endif %}>Reserved</option>
+                                        <option value="occupied" {% if t.Status == "occupied" %}selected{% endif %}>Occupied</option>
+                                        <option value="maintenance" {% if t.Status == "maintenance" %}selected{% endif %}>Maintenance</option>
+                                    </select>
+
+                                    <button class="btn btn-sm btn-gradient table-update-btn" type="submit">
+                                        Update
+                                    </button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if tables|length == 0 %}
+                <div class="empty-state">
+                    No table records found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

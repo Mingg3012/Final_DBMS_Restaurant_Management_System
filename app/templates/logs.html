@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block page_title %}Logs{% endblock %}
+{% block page_subtitle %}Monitor table status logs and audit logs{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <div class="col-12">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Table Status Logs</h5>
+                <span class="section-chip">{{ table_logs|length }} records</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Table</th>
+                            <th>Old Status</th>
+                            <th>New Status</th>
+                            <th>Reason</th>
+                            <th>Changed At</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for log in table_logs %}
+                        <tr>
+                            <td><span class="table-id">#{{ log.LogID }}</span></td>
+                            <td class="fw-semibold">{{ log.TableNumber }}</td>
+                            <td>{{ log.OldStatus or "-" }}</td>
+                            <td>{{ log.NewStatus or "-" }}</td>
+                            <td>{{ log.Reason or "-" }}</td>
+                            <td>{{ log.ChangedAt }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if table_logs|length == 0 %}
+                <div class="empty-state">
+                    No table status logs found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Audit Logs</h5>
+                <span class="section-chip">{{ audit_logs|length }} records</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Audit ID</th>
+                            <th>Action Type</th>
+                            <th>Table Name</th>
+                            <th>Record ID</th>
+                            <th>Description</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for log in audit_logs %}
+                        <tr>
+                            <td><span class="table-id">#{{ log.AuditID }}</span></td>
+                            <td>
+                                <span class="status-badge status-secondary">
+                                    {{ log.ActionType }}
+                                </span>
+                            </td>
+                            <td class="fw-semibold">{{ log.TableName }}</td>
+                            <td>{{ log.RecordID }}</td>
+                            <td>{{ log.Description }}</td>
+                            <td>{{ log.CreatedAt }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if audit_logs|length == 0 %}
+                <div class="empty-state">
+                    No audit logs found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block page_title %}Staff{% endblock %}
+{% block page_subtitle %}Manage restaurant staff information{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {% if can_do_action("add_staff") %}
+    <div class="col-xl-4">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Add Staff</h5>
+                <span class="section-chip">Admin</span>
+            </div>
+
+            <form method="POST" action="/staff/add" class="mt-4">
+                <div class="mb-3">
+                    <label class="form-label">Staff Name</label>
+                    <input class="form-control custom-input" name="staff_name" placeholder="Enter staff name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <select class="form-select custom-input" name="role" required>
+                        <option value="admin">Admin</option>
+                        <option value="cashier">Cashier</option>
+                        <option value="waiter">Waiter</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input class="form-control custom-input" name="phone_number" placeholder="Enter phone number">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input class="form-control custom-input" name="username" placeholder="Enter username" required>
+                </div>
+
+                <button class="btn btn-gradient w-100" type="submit">
+                    <i class="bi bi-person-plus-fill me-2"></i>Add Staff
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+    {% else %}
+    <div class="col-xl-12">
+    {% endif %}
+
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Staff List</h5>
+                <span class="section-chip">{{ staff_members|length }} records</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Staff Name</th>
+                            <th>Role</th>
+                            <th>Phone</th>
+                            <th>Username</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for s in staff_members %}
+                        <tr>
+                            <td><span class="table-id">#{{ s.StaffID }}</span></td>
+                            <td class="fw-semibold">{{ s.StaffName }}</td>
+                            <td>
+                                {% if s.Role == "admin" %}
+                                    <span class="status-badge status-danger">Admin</span>
+                                {% elif s.Role == "cashier" %}
+                                    <span class="status-badge status-warning">Cashier</span>
+                                {% elif s.Role == "waiter" %}
+                                    <span class="status-badge status-success">Waiter</span>
+                                {% else %}
+                                    <span class="status-badge status-secondary">{{ s.Role }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ s.PhoneNumber or "-" }}</td>
+                            <td>{{ s.Username }}</td>
+                            <td>{{ s.CreatedAt }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if staff_members|length == 0 %}
+                <div class="empty-state">
+                    No staff records found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

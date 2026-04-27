@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block page_title %}Invoices{% endblock %}
+{% block page_subtitle %}Generate invoices and track customer payments{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {% if can_do_action("generate_invoice") or can_do_action("pay_invoice") %}
+    <div class="col-xl-4">
+
+        {% if can_do_action("generate_invoice") %}
+        <div class="content-card mb-4">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Generate Invoice</h5>
+                <span class="section-chip">Billing</span>
+            </div>
+
+            <form method="POST" action="/invoices/generate" class="mt-4">
+                <div class="mb-3">
+                    <label class="form-label">Order</label>
+                    <select class="form-select custom-input" name="order_id" required>
+                        {% for o in uninvoiced_orders %}
+                        <option value="{{ o.OrderID }}">
+                            Order #{{ o.OrderID }} - {{ o.CustomerName }} - {{ o.TableNumber }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button class="btn btn-gradient w-100" type="submit">
+                    <i class="bi bi-receipt-cutoff me-2"></i>Generate Invoice
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if can_do_action("pay_invoice") %}
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Pay Invoice</h5>
+                <span class="section-chip">Payment</span>
+            </div>
+
+            <form method="POST" action="/invoices/pay" class="mt-4">
+                <div class="mb-3">
+                    <label class="form-label">Unpaid Invoice</label>
+                    <select class="form-select custom-input" name="invoice_id" required>
+                        {% for i in unpaid_invoices %}
+                        <option value="{{ i.InvoiceID }}">
+                            Invoice #{{ i.InvoiceID }} - {{ "{:,.0f}".format(i.TotalAmount or 0) }} VND
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Payment Method</label>
+                    <select class="form-select custom-input" name="payment_method" required>
+                        <option value="cash">Cash</option>
+                        <option value="card">Card</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="e_wallet">E-Wallet</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Amount</label>
+                    <input class="form-control custom-input" type="number" name="amount" min="0" step="1000" required>
+                </div>
+
+                <button class="btn btn-gradient w-100" type="submit">
+                    <i class="bi bi-cash-coin me-2"></i>Pay Invoice
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-xl-8">
+    {% else %}
+    <div class="col-xl-12">
+    {% endif %}
+
+        <div class="content-card mb-4">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Invoice List</h5>
+                <span class="section-chip">{{ invoices|length }} invoices</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Table</th>
+                            <th>Subtotal</th>
+                            <th>Service</th>
+                            <th>Discount</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Payment Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for i in invoices %}
+                        <tr>
+                            <td><span class="table-id">#{{ i.InvoiceID }}</span></td>
+                            <td>#{{ i.OrderID }}</td>
+                            <td class="fw-semibold">{{ i.CustomerName }}</td>
+                            <td>{{ i.TableNumber }}</td>
+                            <td>{{ "{:,.0f}".format(i.SubTotal or 0) }} VND</td>
+                            <td>{{ "{:,.0f}".format(i.ServiceCharge or 0) }} VND</td>
+                            <td>{{ "{:,.0f}".format(i.DiscountAmount or 0) }} VND</td>
+                            <td class="fw-bold">{{ "{:,.0f}".format(i.TotalAmount or 0) }} VND</td>
+                            <td>
+                                {% if i.PaymentStatus == "paid" %}
+                                    <span class="status-badge status-success">Paid</span>
+                                {% elif i.PaymentStatus == "unpaid" %}
+                                    <span class="status-badge status-warning">Unpaid</span>
+                                {% else %}
+                                    <span class="status-badge status-secondary">{{ i.PaymentStatus }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ i.PaymentDate or "-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if invoices|length == 0 %}
+                <div class="empty-state">
+                    No invoices found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Payment History</h5>
+                <span class="section-chip">{{ payments|length }} records</span>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Payment ID</th>
+                            <th>Invoice ID</th>
+                            <th>Method</th>
+                            <th>Amount</th>
+                            <th>Payment Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for p in payments %}
+                        <tr>
+                            <td><span class="table-id">#{{ p.PaymentID }}</span></td>
+                            <td>#{{ p.InvoiceID }}</td>
+                            <td>{{ p.PaymentMethod }}</td>
+                            <td>{{ "{:,.0f}".format(p.Amount or 0) }} VND</td>
+                            <td>{{ p.PaymentDate }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if payments|length == 0 %}
+                <div class="empty-state">
+                    No payment records found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

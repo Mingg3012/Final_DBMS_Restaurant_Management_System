@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block page_title %}Customers{% endblock %}
+{% block page_subtitle %}Manage customer information and contact details{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {% if can_do_action("add_customer") %}
+    <div class="col-xl-4">
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Add New Customer</h5>
+                <span class="section-chip">Form</span>
+            </div>
+
+            <form method="POST" action="/customers/add" class="mt-4">
+                <div class="mb-3">
+                    <label class="form-label">Customer Name</label>
+                    <input class="form-control custom-input" name="customer_name" placeholder="Enter full name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input class="form-control custom-input" name="phone_number" placeholder="Enter phone number" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input class="form-control custom-input" name="email" placeholder="Enter email">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <input class="form-control custom-input" name="address" placeholder="Enter address">
+                </div>
+
+                <button class="btn btn-gradient w-100" type="submit">
+                    <i class="bi bi-plus-circle me-2"></i>Add Customer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+    {% else %}
+    <div class="col-xl-12">
+    {% endif %}
+
+        <div class="content-card">
+            <div class="section-title-wrap">
+                <h5 class="section-title">Customer List</h5>
+                <span class="section-chip">{{ customers|length }} records</span>
+            </div>
+
+            {% if not can_do_action("add_customer") %}
+            <div class="permission-note mt-4">
+                <i class="bi bi-lock-fill"></i>
+                Current role can view customer records but cannot add new customers.
+            </div>
+            {% endif %}
+
+            <div class="table-responsive mt-4">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for c in customers %}
+                        <tr>
+                            <td><span class="table-id">#{{ c.CustomerID }}</span></td>
+                            <td>
+                                <div class="fw-semibold">{{ c.CustomerName }}</div>
+                            </td>
+                            <td>{{ c.PhoneNumber }}</td>
+                            <td>{{ c.Email or "-" }}</td>
+                            <td>{{ c.Address or "-" }}</td>
+                            <td>{{ c.CreatedAt }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if customers|length == 0 %}
+                <div class="empty-state">
+                    No customer records found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

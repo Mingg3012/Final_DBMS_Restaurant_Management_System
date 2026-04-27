@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Management System</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar d-none d-lg-flex flex-column">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="bi bi-shop"></i>
+            </div>
+            <div>
+                <h5 class="mb-0">Restaurant</h5>
+                <small>Staff Panel</small>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav mt-4">
+
+            {% if can_access_page("dashboard") %}
+            <a class="nav-item-custom {% if request.path == '/' %}active{% endif %}" href="/">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            {% endif %}
+
+            {% if can_access_page("customers") %}
+            <a class="nav-item-custom {% if '/customers' in request.path %}active{% endif %}" href="/customers">
+                <i class="bi bi-people-fill"></i>
+                <span>Customers</span>
+            </a>
+            {% endif %}
+
+            {% if can_access_page("tables") %}
+            <a class="nav-item-custom {% if '/tables' in request.path %}active{% endif %}" href="/tables">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <span>Tables</span>
+            </a>
+            {% endif %}
+
+            {% if can_access_page("menu") %}
+            <a class="nav-item-custom {% if '/menu' in request.path %}active{% endif %}" href="/menu">
+                <i class="bi bi-journal-richtext"></i>
+                <span>Menu</span>
+            </a>
+            {% endif %}
+
+            {% if can_access_page("staff") %}
+            <a class="nav-item-custom {% if '/staff' in request.path %}active{% endif %}" href="/staff">
+                <i class="bi bi-person-badge-fill"></i>
+                <span>Staff</span>
+            </a>
+            {% endif %}
+
+            {% if can_access_page("reservations") %}
+            <a class="nav-item-custom {% if '/reservations' in request.path %}active{% endif %}" href="/reservations">
+                <i class="bi bi-calendar2-check-fill"></i>
+                <span>Reservations</span>
+            </a>
+            {% endif %}
+
+            {% if can_access_page("orders") %}
+            <a class="nav-item-custom {% if '/orders' in request.path %}active{% endif %}" href="/orders">
+                <i class="bi bi-basket-fill"></i>
+                <span>Orders</span>
+            </a>
+            {% endif %}
+
+            {% if can_access_page("invoices") %}
+            <a class="nav-item-custom {% if '/invoices' in request.path %}active{% endif %}" href="/invoices">
+                <i class="bi bi-receipt-cutoff"></i>
+                <span>Invoices</span>
+            </a>
+            {% endif %}
+
+            {% if can_access_page("reports") %}
+            <a class="nav-item-custom {% if '/reports' in request.path %}active{% endif %}" href="/reports">
+                <i class="bi bi-bar-chart-fill"></i>
+                <span>Reports</span>
+            </a>
+            {% endif %}
+
+            {% if can_access_page("logs") %}
+            <a class="nav-item-custom {% if '/logs' in request.path %}active{% endif %}" href="/logs">
+                <i class="bi bi-clock-history"></i>
+                <span>Logs</span>
+            </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-footer mt-auto">
+            <div class="small text-muted">Signed in as</div>
+            <div class="fw-semibold">{{ current_user }}</div>
+            <div class="small text-muted">{{ current_role_info.label }}</div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-lg-none fs-4 text-primary">
+                    <i class="bi bi-shop"></i>
+                </div>
+
+                <div>
+                    <h4 class="page-title mb-0">
+                        {% block page_title %}Restaurant Management{% endblock %}
+                    </h4>
+                    <div class="page-subtitle">
+                        {% block page_subtitle %}Manage restaurant operations efficiently{% endblock %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- User profile -->
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+
+                <div class="user-info d-none d-md-block">
+                    <div class="user-name">{{ current_user }}</div>
+                    <div class="user-role">{{ current_role_info.label }}</div>
+                </div>
+
+                <a href="/logout" class="logout-button">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="d-none d-md-inline">Logout</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Mobile nav -->
+        <div class="mobile-nav d-lg-none mb-4">
+
+            {% if can_access_page("dashboard") %}
+            <a class="{% if request.path == '/' %}active{% endif %}" href="/">Dashboard</a>
+            {% endif %}
+
+            {% if can_access_page("customers") %}
+            <a class="{% if '/customers' in request.path %}active{% endif %}" href="/customers">Customers</a>
+            {% endif %}
+
+            {% if can_access_page("tables") %}
+            <a class="{% if '/tables' in request.path %}active{% endif %}" href="/tables">Tables</a>
+            {% endif %}
+
+            {% if can_access_page("menu") %}
+            <a class="{% if '/menu' in request.path %}active{% endif %}" href="/menu">Menu</a>
+            {% endif %}
+
+            {% if can_access_page("staff") %}
+            <a class="{% if '/staff' in request.path %}active{% endif %}" href="/staff">Staff</a>
+            {% endif %}
+
+            {% if can_access_page("reservations") %}
+            <a class="{% if '/reservations' in request.path %}active{% endif %}" href="/reservations">Reservations</a>
+            {% endif %}
+
+            {% if can_access_page("orders") %}
+            <a class="{% if '/orders' in request.path %}active{% endif %}" href="/orders">Orders</a>
+            {% endif %}
+
+            {% if can_access_page("invoices") %}
+            <a class="{% if '/invoices' in request.path %}active{% endif %}" href="/invoices">Invoices</a>
+            {% endif %}
+
+            {% if can_access_page("reports") %}
+            <a class="{% if '/reports' in request.path %}active{% endif %}" href="/reports">Reports</a>
+            {% endif %}
+
+            {% if can_access_page("logs") %}
+            <a class="{% if '/logs' in request.path %}active{% endif %}" href="/logs">Logs</a>
+            {% endif %}
+
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} shadow-sm border-0 rounded-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
