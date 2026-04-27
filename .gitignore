@@ -46,3 +46,11 @@ Thumbs.db
 
 # Zip files
 *.zip
+
+# Backup / Windows metadata
+backup/
+Backup/
+desktop.ini
+Dump*.sql
+*_backup.sql
+restaurant_db_full_backup.sql
